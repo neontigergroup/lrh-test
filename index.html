@@ -199,6 +199,7 @@ html[data-theme=light] .lstats,html[data-theme=light] .lstats div{border-color:r
 /* r15: nav row: three equal boxes on one line at every width */
 .boxes{flex-wrap:nowrap;gap:8px}.boxes a{flex:0 1 120px;min-width:0;padding:10px 2px;font-size:10.5px;letter-spacing:.07em}
 .rest .ph-img[src*=patio-strip]{height:auto;aspect-ratio:1050/318;display:block}.rest .ph-img.ph-low{height:auto;aspect-ratio:1200/540;display:block;margin-top:0}
+@media (max-width:699px){.boxes{gap:6px;padding-left:12px;padding-right:12px}.boxes a{flex:1 1 0;padding:10px 1px;font-size:9.5px;letter-spacing:.03em}}
 /* r15: responsive (phone <700px unchanged; everything below only applies from 700px up) */
 .panel{display:none}
 @media (min-width:700px){
@@ -287,15 +288,14 @@ html[data-theme=light] .lstats,html[data-theme=light] .lstats div{border-color:r
 
 <div hidden><div id="teamList"></div><div id="portList"></div></div>
 
-<section id="participate" class="big"><div class="k">How to participate</div><div class="bar"></div><h2>Join us in Alpine</h2><p class="lead">Three steps from here to the first two huts. Start with the packet, then a call with Ryan.</p>
+<section id="participate" class="big"><div class="k">How to participate</div><div class="bar"></div><h2>Join us in Alpine</h2><p class="lead">Two steps from here to the first two huts. Start with the investor packet.</p>
 <div class="steps">
  <div class="step"><div class="n">Step 1</div><b>Request the investor packet</b>
   <form id="pform" onsubmit="event.preventDefault();document.getElementById('pnote').style.display='block'">
   <label for="n">Name</label><input id="n" autocomplete="name"><label for="e">Email</label><input id="e" type="email" autocomplete="email">
   <label for="r">Rough interest range</label><select id="r"><option>$50K – $100K</option><option>$100K – $250K</option><option>$250K – $500K</option><option>$500K+</option></select>
   <button class="btn">Request the packet</button><div class="note" id="pnote">Sketch only. Nothing was sent.</div></form></div>
- <div class="step"><div class="n">Step 2</div><b>Book a 20-minute call with Ryan</b><a class="btn ghost" href="#" onclick="return false">Book a call (link coming)</a></div>
- <div class="step"><div class="n">Step 3</div><b>What happens next</b><div class="flow"><span>Intro call</span><em>↓</em><span>Packet + NDA (charging details under NDA)</span><em>↓</em><span>Subscription docs once terms are final</span></div></div>
+ <div class="step"><div class="n">Step 2</div><b>What happens next</b><div class="flow"><span>Packet + NDA (charging details under NDA)</span><em>↓</em><span>Subscription docs once terms are final</span></div></div>
 </div></section>
 
 <footer><p class="small">Working presentation for discussion. Project scope, timing and investment terms remain subject to confirmation. Huts, sauna and charging are proposed plans; design, permitting, utility capacity and funding require confirmation. This page is not an offer to sell securities.</p></footer>
