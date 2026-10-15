@@ -193,6 +193,38 @@ section{padding-top:36px}
 .sticky a{background:#5ac078!important;color:#fff!important;border-radius:0;animation:ppulse 2.4s ease-in-out infinite}
 @keyframes ppulse{0%,100%{box-shadow:0 0 0 0 rgba(90,192,120,.55)}50%{box-shadow:0 0 0 7px rgba(90,192,120,0)}}
 select{-webkit-appearance:none;appearance:none;padding-right:40px;background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);background-position:calc(100% - 27px) 50%,calc(100% - 21px) 50%;background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+
+/* r15: responsive (phone <700px unchanged; everything below only applies from 700px up) */
+.panel{display:none}
+@media (min-width:700px){
+ .wrap{max-width:1440px}
+ section,footer{max-width:760px;margin-left:auto;margin-right:auto;padding-left:32px;padding-right:32px}
+ h2{font-size:clamp(30px,1.4vw + 21px,46px)}
+ p{font-size:clamp(16px,.3vw + 14px,19px)}
+ .stats{grid-template-columns:repeat(4,1fr)}
+ #participate.big h2{font-size:clamp(40px,2vw + 26px,60px)}
+ #participate.big .lead{font-size:clamp(18px,.4vw + 15px,21px)}
+ .sticky .in{max-width:760px}
+ .scrim{background:rgba(0,0,0,.55)}html[data-theme=light] .scrim{background:rgba(31,23,15,.35)}
+ .sheet{top:auto;height:auto;max-height:88vh;max-height:88dvh;max-width:640px;border-radius:14px 14px 0 0;border-left:1px solid var(--line);border-right:1px solid var(--line);padding-top:34px}
+ .sheet .grab{top:4px}.sheet .x{top:6px}
+ body>.sheet{transform:translateY(calc(100% + 60px));visibility:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),visibility 0s .35s}
+ body>.sheet.open{transform:none;visibility:visible;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+}
+@media (min-width:1100px){
+ .panel{display:block;flex:none;position:relative;z-index:8;width:0;height:calc(100vh - 56px);height:calc(100dvh - 56px);align-self:center;margin-left:0;overflow:hidden;transition:width .7s cubic-bezier(.4,0,.2,1),margin-left .7s cubic-bezier(.4,0,.2,1)}
+ body:not(.intro) .panel{width:var(--pw);margin-left:var(--pg)}
+ .stagebox:before{display:none}
+ :root{--pw:clamp(400px,30vw,560px);--pg:clamp(28px,3vw,56px)}
+ body:not(.intro) .boxes{padding-right:calc(16px + var(--pw) + var(--pg))}
+ .panel .phint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border:1px dashed var(--line);background:rgba(20,20,20,.55);font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mut);text-align:center;padding:24px;white-space:nowrap}
+ html[data-theme=light] .panel .phint{background:rgba(233,240,234,.7)}
+ .panel .phint:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--acc)}
+ .panel .sheet{position:absolute;inset:0;max-width:none;max-height:none;height:auto;border-radius:0;border:1px solid var(--line);border-top:2px solid var(--acc);transform:none;opacity:0;pointer-events:none;transition:opacity .25s;padding:18px 0 32px}
+ .panel .sheet.green{border-top-color:var(--grn)}
+ .panel .sheet.open{opacity:1;pointer-events:auto}
+ .panel .sheet .grab{display:none}.panel .sheet .x{top:4px}
+}
 </style></head>
 <body class="intro top"><div class="wrap">
 
@@ -212,7 +244,7 @@ select{-webkit-appearance:none;appearance:none;padding-right:40px;background-ima
   <video id="intro" src="assets/intro.mp4?v=13r" muted playsinline autoplay preload="auto"></video>
   <button class="skip" id="skip">Skip intro ›</button>
   <button class="toggle" id="toggle" aria-label="Switch day or night">☀ Day</button>
-</div></div>
+</div><aside class="panel" id="panel"><div class="phint">Tap a label on the map<br>to open its card</div></aside></div>
 
 <nav class="boxes" id="boxes"><a href="#plan">Our plan</a><a href="#team" data-open="team">Our team</a><a href="#portfolio" data-open="portfolio">Portfolio</a></nav>
 
@@ -382,4 +414,10 @@ tr.addEventListener('scroll',()=>requestAnimationFrame(upd),{passive:true});tr.t
  el.addEventListener('pointerdown',()=>{ lp=setTimeout(()=>{lp=null; replay();},650); });
  el.addEventListener('pointerup',()=>{ if(lp===null) return; clearTimeout(lp); lp=null; const n=performance.now(); if(n-lastTap<320){ replay(); return; } lastTap=n; setTimeout(()=>{ if(lastTap===n){ frozen=!frozen; el.style.borderColor=frozen?'#e8933a':'rgba(250,246,232,.25)'; log(frozen?'timer frozen':'timer running'); } },330); });
 })();
+
+// r15: laptop and up (1100px+): cards dock into the right-hand panel beside the map while the map is in view
+const DESK=matchMedia('(min-width:1100px)'), panel=document.getElementById('panel');
+function canDock(){ if(!DESK.matches||document.body.classList.contains('intro')) return false; const r=panel.getBoundingClientRect(); return r.bottom>innerHeight*.5&&r.top<innerHeight*.5; }
+const _openCard=openCard; openCard=function(id){ const d=canDock(); if(d&&sheet.parentNode!==panel){ sheet.classList.remove('open'); panel.appendChild(sheet); } else if(!d&&sheet.parentNode===panel){ sheet.classList.remove('open'); document.body.appendChild(sheet); void sheet.offsetWidth; } _openCard(id); if(d) scrim.classList.remove('open'); };
+DESK.addEventListener('change',()=>{ if(!DESK.matches&&sheet.parentNode===panel){ closeCard(); document.body.appendChild(sheet); } });
 </script></body></html>
