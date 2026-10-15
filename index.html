@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en" data-theme="dark"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Last Resort"><meta name="theme-color" content="#181818"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="assets/img/icon-180.png">
+<title>Last Resort · Alpine, Wyoming (sketch)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#181818;--bg2:#1f1f1f;--card:#141414;--ink:#ece8de;--mut:#a9a49a;--dim:#6f6b64;--line:rgba(250,246,232,.18);--acc:#e8933a;--grn:#5ac078;--boxfill:rgba(20,20,20,.82);--lbl:#faf6e8;
+ --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;--sans:"Helvetica Neue",Helvetica,Arial,sans-serif}
+html[data-theme=light]{--bg:#E9F0EA;--bg2:#dfe7e0;--card:#f3f7f3;--ink:#1F170F;--mut:#4d453c;--dim:#7a7268;--line:rgba(31,23,15,.18);--acc:#c46e1f;--grn:#2f8a4c;--boxfill:rgba(233,240,234,.9);--lbl:#1F170F}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{transition:background .3s}
+.wrap{max-width:480px;margin:0 auto;position:relative}
+/* map stage: 390x844 design frame, scales with width */
+.stage{position:relative;width:100%;aspect-ratio:390/844;overflow:hidden;background:#181818}
+.stage img.map{position:absolute;inset:0;width:100%;height:100%;display:block}
+#mapLight{opacity:0;transition:opacity .35s}html[data-theme=light] #mapLight{opacity:1}
+/* hand-off: start at the v13l intro end framing (fit from label anchors, 0.12px residual), ease out to the full-parcel framing */
+#mz{position:absolute;inset:0;transform-origin:50% 50%;transition:transform .5s cubic-bezier(.45,0,.25,1)}
+g.lab{transition:transform .5s cubic-bezier(.45,0,.25,1)}
+#mz.hand{transform:none}   /* r7: intro end = map scaled about the stage centre (fit resid 0.01px, no lateral move) */
+.stage > svg.ui{pointer-events:none}.stage > svg.ui *{pointer-events:auto}
+.stage svg.ui{position:absolute;inset:0;width:100%;height:100%}
+.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:5;background:#181818;transition:opacity .25s}
+.stage video.gone{opacity:0;pointer-events:none}
+.ui .eb{font:600 11px var(--mono);letter-spacing:.14em;fill:#c9c4b8}
+.ui .ttl{font:700 34px var(--sans);letter-spacing:-.01em;fill:#ece8de}
+.ui .sub{font:600 11px var(--mono);letter-spacing:.12em;fill:#a9a49a}
+.ui .hint{font:600 11px var(--mono);letter-spacing:.2em;fill:#c9c4b8}
+html[data-theme=light] .ui .eb,html[data-theme=light] .ui .hint{fill:#4d453c}html[data-theme=light] .ui .ttl{fill:#1F170F}html[data-theme=light] .ui .sub{fill:#4d453c}
+.ui .rule{fill:var(--acc)}
+.lab{cursor:pointer}.lab .ld,.lab .fr{fill:none;stroke-width:1.3}.lab .ld{stroke-width:1}.lab .bx{fill:var(--boxfill)}
+.lab text{font:600 10.5px var(--mono);letter-spacing:.12em;fill:var(--lbl)}
+.lab .hit{fill:transparent}
+.lab .pl{pointer-events:none;fill:none;stroke-width:1.6;transform-box:fill-box;transform-origin:center;animation:pulse 1.6s cubic-bezier(.2,.6,.3,1) infinite}
+@keyframes pulse{0%{transform:scale(.75);opacity:.85}100%{transform:scale(4.2);opacity:0}}
+.lab:focus{outline:none}.lab:focus-visible .fr{stroke-width:2.4}
+.toggle{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;z-index:6;font:600 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#ece8de;background:rgba(20,20,20,.6);border:1px solid rgba(250,246,232,.35);border-radius:16px;padding:7px 11px;cursor:pointer}
+html[data-theme=light] .toggle{color:#1F170F;background:rgba(233,240,234,.8);border-color:rgba(31,23,15,.35)}
+.skip{position:absolute;top:calc(14px + env(safe-area-inset-top));left:14px;z-index:6;font:600 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#c9c4b8;background:rgba(20,20,20,.55);border:1px solid rgba(250,246,232,.3);border-radius:3px;padding:6px 9px}
+.toggle,.boxes,.sticky{transition:opacity .3s}body.intro .toggle,body.intro .sticky,body.intro .boxes,body.top .sticky{opacity:0;pointer-events:none}
+#tapg{transition:transform .7s cubic-bezier(.4,0,.2,1)}body.tucked #tapg{transform:translateY(-154px)}
+.boxes{transition:opacity .3s,margin-top .7s cubic-bezier(.4,0,.2,1)}
+/* r13: sauna + charging cards */
+.replaybtn{display:inline-block;margin:10px 0 2px;background:none;border:1px solid var(--acc);color:var(--acc);border-radius:999px;padding:7px 13px;font:600 10px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;cursor:pointer}
+.cpill{margin:2px 0 10px}.cpill .pill{align-self:auto}
+#sheetBody .lead{font-size:16px;line-height:1.45;color:var(--mut);margin:4px 0 12px}
+#sheetBody ul.facts{list-style:none;padding:0;margin:16px 0 12px;border-top:1px solid var(--line)}
+#sheetBody ul.facts li{padding:10px 0 10px 18px;border-bottom:1px solid var(--line);position:relative;font-size:14.5px;line-height:1.45}
+#sheetBody ul.facts li:before{content:"";position:absolute;left:2px;top:17px;width:6px;height:6px;border-radius:50%;background:var(--acc)}
+#sheetBody p.close{font-size:13px;color:var(--mut);border-left:2px solid var(--acc);padding-left:10px}
+#sheetBody .tlink{display:block;margin:10px 0 4px}
+/* r14: team deck = one person per view, stacked, no neighbour bleed */
+.pcar.tcar1{display:flex;gap:0;overflow-x:auto;scroll-snap-type:x mandatory;margin:14px -22px 0;padding:0;scrollbar-width:none}
+.pcar.tcar1::-webkit-scrollbar{display:none}
+.tcar1 .tm{flex:0 0 100%;box-sizing:border-box;padding:0 22px;scroll-snap-align:start;display:flex;flex-direction:column}
+.tcar1 .tm img{width:100%;aspect-ratio:4/3.4;height:auto;object-fit:cover;object-position:50% 22%;display:block;margin:0 0 12px}
+.tcar1 .tm b{display:block;font:700 18px var(--sans);margin:0}
+.tcar1 .tm i{display:block;font:600 10px/1.45 var(--mono);font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin:3px 0 8px}
+.tcar1 .tm p{font-size:14.5px;line-height:1.5;margin:0}
+.tdots{display:flex;justify-content:center;gap:7px;margin-top:12px}.tdots span{width:6px;height:6px;border-radius:50%;background:var(--line)}.tdots span.on{background:var(--acc)}
+/* r13: team cards aligned (fixed text block) */
+.pcar.tcar .tslide .person > div{display:flex;flex-direction:column}
+/* box row */
+.boxes{position:relative;z-index:7;background:var(--bg);display:flex;justify-content:center;flex-wrap:wrap;gap:8px;padding:14px 16px 6px}
+.boxes a{display:inline-block;white-space:nowrap;border:1.3px solid var(--ink);padding:10px 11px;text-align:center;font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);text-decoration:none}
+.boxes a:first-child{border-color:var(--acc);color:var(--acc)}
+/* sections */
+section{padding:44px 22px 10px;scroll-margin-top:10px}
+.k{font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.bar{width:38px;height:2px;background:var(--acc);margin:12px 0 14px}
+h2{font:700 30px/1.05 var(--sans);letter-spacing:-.01em;margin:0 0 12px}
+h3{font:700 19px/1.15 var(--sans);margin:22px 0 6px}
+p{font:400 16px/1.5 var(--sans);color:var(--ink);opacity:.9;margin:0 0 12px}
+.small{font:500 11px/1.45 var(--mono);letter-spacing:.04em;color:var(--dim)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.stat{border:1px solid var(--line);padding:12px}.stat b{display:block;font:700 24px var(--sans);color:var(--acc)}.stat span{font:600 10px/1.35 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.ph{display:inline-block;font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;border:1px dashed var(--acc);color:var(--acc);padding:4px 7px;margin:4px 0 10px}
+.gates{border-left:2px solid var(--line);margin:18px 0 6px 6px;padding-left:16px}
+.gate{position:relative;margin-bottom:20px}.gate:before{content:"";position:absolute;left:-23px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--bg);border:2px solid var(--acc)}
+.gate .when{font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
+.gate b{display:block;font:700 17px var(--sans);margin:3px 0}.gate p{font-size:14px;margin:0}
+.terms{border:1px dashed var(--line);padding:14px;margin:12px 0}
+.team{display:grid;gap:14px;margin-top:14px}
+.person{display:grid;grid-template-columns:74px 1fr;gap:12px;align-items:start;border-top:1px solid var(--line);padding-top:12px}
+.person img{width:74px;height:74px;object-fit:cover;filter:grayscale(.15)}
+.person b{display:block;font:700 16px var(--sans)}.person i{display:block;font:600 10px/1.4 var(--mono);font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin:2px 0 6px}
+.person p{font-size:13.5px;line-height:1.45;margin:0}
+.rest{border-top:1px solid var(--line);padding:14px 0}
+.rest .top{display:flex;align-items:center;gap:12px}.rest .top img{width:52px;height:52px;object-fit:contain}
+.rest b{font:700 17px var(--sans)}.rest i{display:block;font:600 10px var(--mono);font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.rest .ph-img{width:100%;height:180px;object-fit:cover;object-position:50% 50%;margin-top:10px}
+.steps{counter-reset:s;margin:18px 0}
+.step{border:1px solid var(--line);padding:16px;margin-bottom:12px}
+.step .n{font:600 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--acc)}
+.step b{display:block;font:700 18px var(--sans);margin:4px 0 10px}
+label{display:block;font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin:10px 0 4px}
+input,select{width:100%;font:16px var(--sans);padding:10px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:0}
+select option{color:#000}
+.btn{display:inline-block;width:100%;text-align:center;margin-top:12px;background:var(--acc);color:#141414;font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:13px;border:0;text-decoration:none;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--acc);border:1.3px solid var(--acc)}
+.flow{display:flex;flex-direction:column;gap:6px;font:600 11px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.flow span{border:1px solid var(--line);padding:9px 10px}.flow em{font-style:normal;color:var(--acc);text-align:center}
+.note{font:500 12px/1.4 var(--mono);color:var(--acc);margin-top:8px;display:none}
+footer{padding:30px 22px calc(110px + env(safe-area-inset-bottom))}
+body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+/* sticky bar */
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:rgba(20,20,20,.92);backdrop-filter:blur(6px);border-top:1px solid rgba(250,246,232,.15)}
+html[data-theme=light] .sticky{background:rgba(233,240,234,.94);border-top-color:rgba(31,23,15,.15)}
+.sticky .in{max-width:452px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.sticky .t{flex:1;font:600 10.5px/1.35 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}.sticky .t b{color:var(--ink);font-size:13px}
+.sticky a{background:var(--acc);color:#141414;font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:11px 14px;text-decoration:none}
+/* card sheet */
+.scrim{position:fixed;inset:0;z-index:30;background:var(--bg);opacity:0;pointer-events:none;transition:opacity .25s}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;max-width:480px;margin:0 auto;top:0;height:100vh;height:100dvh;max-height:none;overscroll-behavior:contain;overflow:auto;background:var(--card);border-top:2px solid var(--acc);transform:translateY(102%);transition:transform .35s cubic-bezier(.2,.8,.2,1);padding:calc(env(safe-area-inset-top) + 44px) 0 calc(40px + env(safe-area-inset-bottom))}
+.sheet.open{transform:none}.scrim.open{opacity:1;pointer-events:auto}
+.sheet.green{border-top-color:var(--grn)}
+.sheet .grab{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 14px);width:40px;height:4px;background:var(--line);border-radius:2px;margin:10px auto 0}
+.sheet .x{position:sticky;top:calc(env(safe-area-inset-top) + 8px);z-index:2;width:40px;height:40px;float:right;margin:6px 10px 0 0;background:transparent;border:0;color:var(--mut);font:600 22px var(--sans);cursor:pointer}
+.sheet .body{padding:10px 22px}.back{display:inline-block;margin:22px 0 6px;font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);text-decoration:none;background:none;border:0;padding:0;cursor:pointer}
+.sheet .st{font:600 10px var(--mono);letter-spacing:.1em;padding-right:44px;text-transform:uppercase;color:var(--acc)}.sheet.green .st{color:var(--grn)}
+.sheet h2{margin-top:6px}
+
+.car{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin:14px -22px;padding:0 22px}
+.car img{flex:0 0 86%;height:220px;object-fit:cover;scroll-snap-align:center;background:#222}
+.car img.contain{object-fit:contain;background:transparent}
+.car .sheetimg{flex:0 0 86%;height:220px;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;background:var(--acc);padding:10px}
+.car .sheetimg img{width:100%;height:100%;object-fit:contain;background:transparent;flex:none;filter:brightness(0) opacity(.88)}
+html[data-theme=light] .car .sheetimg{background:transparent;padding:0}
+html[data-theme=light] .car .sheetimg img{filter:none}
+.ss{position:relative;margin:14px -22px 4px;background:transparent}
+.ss-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}.ss-track::-webkit-scrollbar{display:none}
+.ss-slide{flex:0 0 100%;height:340px;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;background:transparent}
+.ss-slide img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.ss-btn{position:absolute;top:150px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--boxfill);color:var(--ink);font:400 22px/1 var(--sans);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ss-btn.prev{left:10px}.ss-btn.next{right:10px}.ss-btn[disabled]{opacity:.3;cursor:default}
+.ss-foot{display:flex;justify-content:space-between;align-items:center;padding:8px 22px 0}
+.ss-count{font:600 10px var(--mono);letter-spacing:.12em;color:var(--mut)}
+.ss-dots{display:flex;gap:6px}.ss-dots button{width:7px;height:7px;padding:0;border-radius:50%;border:0;background:var(--dim);cursor:pointer}.ss-dots button.on{background:var(--acc)}
+.car.fogo{margin-bottom:4px}.car.fogo img{height:300px}.car.fogo img.tall{flex:0 0 auto;width:225px}
+.credit{font:500 10px var(--mono);letter-spacing:.06em;color:var(--dim);margin:0 0 6px}
+.pcar{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:14px -22px 0;padding:0 22px 6px}
+.pcar .rest{flex:0 0 86%;scroll-snap-align:center;border-top:1px solid var(--line)}
+html{scroll-behavior:smooth}
+table{width:100%;border-collapse:collapse;font:500 13px var(--mono);margin:8px 0}td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}td:nth-child(n+2),th:nth-child(n+2){text-align:right}
+.flag{font:500 11px/1.4 var(--mono);color:#e0b23a;border:1px dashed #e0b23a;padding:8px;margin:10px 0}
+.soon{border:1px dashed var(--line);padding:26px 16px;text-align:center;margin:16px 0}
+
+/* r6: phase openers + status pills */
+.phase .opener{display:flex;flex-direction:column;padding:0;scroll-margin-top:0}
+.phase{--pc:var(--acc)}.phase.p1{--pc:var(--grn)}
+.eyebrow{font:600 11px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--pc)}
+.pbar{width:38px;height:2px;background:var(--pc);margin:12px 0 16px}
+.trow{display:flex;flex-wrap:wrap;align-items:center;column-gap:12px;row-gap:10px;margin:0 0 18px}.ptitle{font:700 40px/1.02 var(--sans);letter-spacing:-.02em;margin:0}
+.pill{align-self:center;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--pc);color:var(--pc);border-radius:999px;padding:5px 11px 5px 10px;font:600 10px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;margin:0}
+.pill i{position:relative;width:6px;height:6px;border-radius:50%;background:var(--pc)}
+.pill.op i:after{content:"";position:absolute;inset:0;border-radius:50%;border:1.5px solid var(--pc);animation:pillp 1.6s cubic-bezier(.2,.6,.3,1) infinite}
+@keyframes pillp{0%{transform:scale(1);opacity:.85}100%{transform:scale(3.4);opacity:0}}
+.swipehint{font:600 10px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-top:8px}
+.rowk{font:600 10px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--pc);margin:18px 0 -4px}
+.car.tiles .tile{flex:0 0 62%;scroll-snap-align:center;border:1px solid var(--line);padding:16px 14px;min-height:120px;display:flex;flex-direction:column;justify-content:flex-end}
+.car.tiles .tile b{font:700 28px var(--sans);color:var(--pc)}.car.tiles .tile span{font:600 10px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-top:4px}
+/* r6: intro/map stage fits the visible viewport (dvh), contain-fit, leftover filled with the map dark */
+.stagebox{position:relative;height:100vh;height:100dvh;display:flex;align-items:center;justify-content:center;background:#181818;overflow:hidden}
+/* r8: short viewports (contain-fit leaves side room): the room is filled by a wider render of the same final map frame (same camera, centre 390 identical), so no dark band; it fades in only as the intro lands */
+.stagebox:before{content:"";position:absolute;inset:0;background:url(assets/map/map-wide-dark.jpg) center/auto 100% no-repeat;opacity:1;transition:opacity .6s;pointer-events:none}
+html[data-theme=light] .stagebox:before{background-image:url(assets/map/map-wide-light.jpg)}
+body.intro:not(.landing) .stagebox:before{opacity:0}
+.stagebox .stage{z-index:1}
+html[data-theme=light] .stagebox{background:#E9F0EA}
+.stagebox .stage{width:min(100%,calc(100vh*390/844));width:min(100%,calc(100dvh*390/844));flex:none}
+/* r7: nothing from the live map UI shows over or around the intro; it fades in as the video hands off */
+.stage svg.ui{transition:opacity .25s}body.intro .stage svg.ui{opacity:0;visibility:hidden}
+/* r7: compact pitch scroll */
+.tlink{display:inline-block;margin:4px 0 0;font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--pc,var(--acc));text-decoration:none}
+.pcar.tcar .person{flex:0 0 86%;scroll-snap-align:center;display:block;border-top:1px solid var(--line);padding-top:14px}
+.pcar.tcar .person img{width:100%;height:240px;object-fit:cover;object-position:50% 25%;margin-bottom:10px}
+section{padding-top:36px}
+/* r8 */
+.pcar.tcar .tslide{flex:0 0 88%;scroll-snap-align:center;display:flex;flex-direction:column;gap:18px}
+.pcar.tcar .tslide .person{flex:none;display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:start;border-top:1px solid var(--line);padding-top:14px}
+.pcar.tcar .tslide .person img{width:120px;height:150px;object-fit:cover;object-position:50% 30%;margin:0}
+.pcar.tcar .person i{line-height:1.5}
+.obar{display:flex;align-items:center;gap:12px;background:#e8933a;padding:10px 12px;margin:0}
+.obar img{height:44px;width:auto;max-width:72px;object-fit:contain}
+.obar b{display:block;font:700 17px var(--sans);color:#000}.obar i{display:block;font:600 10px var(--mono);font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:#000}
+.pcar .rest .ph-img{margin-top:0}
+.pcar .rest{padding-top:5px}.obar{margin-bottom:11px!important}   /* r8b: bar tucked up to the divider; dark gap above the photos */
+#participate.big{padding-top:56px;padding-bottom:20px;border-top:2px solid var(--acc);margin-top:30px}
+#participate.big h2{font-size:40px;line-height:1.02}
+#participate.big .lead{font-size:18px}
+#participate.big .step b{font-size:21px}
+.sticky a{background:#5ac078!important;color:#fff!important;border-radius:0;animation:ppulse 2.4s ease-in-out infinite}
+@keyframes ppulse{0%,100%{box-shadow:0 0 0 0 rgba(90,192,120,.55)}50%{box-shadow:0 0 0 7px rgba(90,192,120,0)}}
+select{-webkit-appearance:none;appearance:none;padding-right:40px;background-image:linear-gradient(45deg,transparent 50%,var(--mut) 50%),linear-gradient(135deg,var(--mut) 50%,transparent 50%);background-position:calc(100% - 27px) 50%,calc(100% - 21px) 50%;background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+</style></head>
+<body class="intro top"><div class="wrap">
+
+<div class="stagebox"><div class="stage" id="stage">
+  <div id="mz" class="hand">
+  <img class="map" src="assets/map/map-dark.jpg" alt="">
+  <img class="map" id="mapLight" src="assets/map/map-light.jpg" alt="">
+  </div>
+  <svg class="ui" id="ui" viewBox="0 0 390 844" aria-label="Site map of Last Resort, Alpine, Wyoming. Tap a label to open its card.">
+    <text class="eb" x="24" y="103">LAST RESORT · ALPINE, WYOMING</text>
+    <rect class="rule" x="24" y="117" width="38" height="2"/>
+    <text class="ttl" x="23" y="160">Explore the site</text>
+    <text class="sub" x="24" y="188">HUTS · SAUNA · TYGR MART · CHARGING</text>
+    <g id="labs"></g>
+    <g id="tapg"><circle cx="128.5" cy="791" r="3.5" class="rule"/><text class="hint" x="141" y="795">TAP TO EXPLORE</text></g><!-- r11: lifts 154 units after the handoff (matches the intro frame first, then tucks up under the labels) -->
+  </svg>
+  <video id="intro" src="assets/intro.mp4?v=13r" muted playsinline autoplay preload="auto"></video>
+  <button class="skip" id="skip">Skip intro ›</button>
+  <button class="toggle" id="toggle" aria-label="Switch day or night">☀ Day</button>
+</div></div>
+
+<nav class="boxes" id="boxes"><a href="#plan">Our plan</a><a href="#team" data-open="team">Our team</a><a href="#portfolio" data-open="portfolio">Portfolio</a></nav>
+
+<section id="plan"><div class="k">Our plan · The opportunity</div><div class="bar"></div>
+<h2>Eat. Charge. Stay.</h2>
+<p>Last Resort is 2.56 acres on US Highway 89 in Alpine, Wyoming: entitled land, a business already open on it, and a permit for five backcountry huts. Last Resort runs on the Neon Tiger Hospitality engine: eighteen years, five doors, three states, and one team that knows how to open a place and keep it full.</p>
+<div class="stats"><div class="stat"><b>~5,600</b><span>vehicles a day on Hwy 89 in Alpine (WYDOT, 2025)</span></div><div class="stat"><b>+56%</b><span>traffic projected by 2040</span></div><div class="stat"><b>5</b><span>huts approved under the CUP</span></div><div class="stat"><b>2026</b><span>TYGR Mart open since January</span></div></div></section>
+
+<section id="phase1" class="phase p1">
+<div class="opener"><div class="eyebrow">Phase one</div><div class="pbar"></div><div class="trow"><h2 class="ptitle">TYGR Mart</h2><span class="pill op"><i></i>Operational</span></div>
+<p>Open today on Highway 89. Bold food, a market with personality and mountain views. TYGR Mart is the operating heart of the Alpine plan and the first reason to stop.</p><p>We acquired the land through a note from family friends, which let us get the property activated quickly.</p></div>
+<a class="tlink" href="#" data-open="tygr-mart">See TYGR Mart ›</a></section>
+
+<section id="phase2" class="phase p2">
+<div class="opener"><div class="eyebrow">Phase two</div><div class="pbar"></div><div class="trow"><h2 class="ptitle">Approved for 5 huts.<br>We start with 2.</h2><span class="pill op nx"><i></i>Approved · Phase 2</span></div>
+<p>Two Backcountry Hut Company cabins and a shared sauna give travelers a reason to stay the night. The permit allows five, so we prove the first two before building more.</p></div>
+<a class="tlink" href="#" data-open="cabins">See the huts ›</a></section>
+
+<section id="deal"><div class="k">The raise</div><div class="bar"></div><h2>Raising $3.5M</h2>
+<p>Phase one is open and Phase two is approved. This raise is what carries us from one to the other: first we own the land clean, then we build and prove the first two huts.</p>
+<p>One raise, two gates. Gate 1 is inside the $3.5M, not on top of it.</p>
+<div class="gates">
+ <div class="gate"><div class="when">Gate 1 · target Dec 15, 2026</div><b>Own the land clean · ~$1.99M</b><p>Pay off the Etna seller note before it matures on Jan 1.</p></div>
+ <div class="gate"><div class="when">Gate 2 · 2027</div><b>Prove it · huts ~$1.05M + contingency ~$462K</b><p>Feasibility ~2 months, hut kits ~6 months after order, first guests targeted Jul 1, 2027 (draft).</p></div>
+ <div class="gate"><div class="when">Later</div><b>Build to five</b><p>Huts 3–5 only after the first two prove out, funded separately.</p></div>
+</div>
+<div class="terms"><span class="ph">Placeholder · Final terms in progress</span><p class="small">Instrument, price per unit, minimum check, distributions and ownership after close will be published here once terms are final.</p></div></section>
+
+<section id="charging"><div class="k">On the horizon</div><div class="bar"></div><h2>Supercharging</h2>
+<p>The approved site plan includes an eight-stall charging row beside TYGR Mart. Charging gives Highway 89 travelers a reason to stop, eat and stay longer.</p>
+<div class="stats"><div class="stat"><b>8</b><span>stalls on the approved site plan</span></div><div class="stat"><b>$0.10</b><span>per kWh Tesla host fee (public)</span></div><div class="stat"><b>~271</b><span>kWh per stall per day, Tesla network avg (public, Q2 2026)</span></div><div class="stat"><b>15.8%</b><span>US fast-charger utilization (Paren, Q2 2026)</span></div></div>
+<p class="small">Public figures only. Our equipment quote and site economics are shared under NDA.</p></section>
+
+
+
+<div hidden><div id="teamList"></div><div id="portList"></div></div>
+
+<section id="participate" class="big"><div class="k">How to participate</div><div class="bar"></div><h2>Join us in Alpine</h2><p class="lead">Three steps from here to the first two huts. Start with the packet, then a call with Ryan.</p>
+<div class="steps">
+ <div class="step"><div class="n">Step 1</div><b>Request the investor packet</b>
+  <form id="pform" onsubmit="event.preventDefault();document.getElementById('pnote').style.display='block'">
+  <label for="n">Name</label><input id="n" autocomplete="name"><label for="e">Email</label><input id="e" type="email" autocomplete="email">
+  <label for="r">Rough interest range</label><select id="r"><option>$50K – $100K</option><option>$100K – $250K</option><option>$250K – $500K</option><option>$500K+</option></select>
+  <button class="btn">Request the packet</button><div class="note" id="pnote">Sketch only. Nothing was sent.</div></form></div>
+ <div class="step"><div class="n">Step 2</div><b>Book a 20-minute call with Ryan</b><a class="btn ghost" href="#" onclick="return false">Book a call (link coming)</a></div>
+ <div class="step"><div class="n">Step 3</div><b>What happens next</b><div class="flow"><span>Intro call</span><em>↓</em><span>Packet + NDA (charging details under NDA)</span><em>↓</em><span>Subscription docs once terms are final</span></div></div>
+</div></section>
+
+<footer><p class="small">Working presentation for discussion. Project scope, timing and investment terms remain subject to confirmation. Huts, sauna and charging are proposed plans; design, permitting, utility capacity and funding require confirmation. This page is not an offer to sell securities.</p></footer>
+</div>
+
+<div class="sticky"><div class="in"><div class="t"><b>Raising $3.5M</b><br>Gate 1 target Dec 15</div><a href="#participate">Participate</a></div></div>
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="grab"></div><button class="x" id="close" aria-label="Close">×</button><div class="body" id="sheetBody"></div></div>
+
+<script>
+const LABS=[
+ {id:'cabins',t:'BACKCOUNTRY HUTS',c:'acc',a:[247.56,340.67],p:'247.56,340.67 211.56,236.67 237.56,236.67',b:[237.56,224.67,140.97,24]},
+ {id:'tygr-mart',t:'TYGR MART',c:'grn',a:[205.39,436.74],p:'205.39,436.74 181.19,488.74 161.39,488.74',b:[73.34,476.74,88.05,24]},
+ {id:'sauna',t:'SAUNA',c:'acc',a:[277.11,369.90],p:'277.11,369.90 301.31,329.90 321.11,329.90',b:[321.11,317.90,57.81,24]},
+ {id:'charging',t:'EV CHARGING',c:'acc',a:[276.18,474.46],p:'276.18,474.46 225.18,584.46 205.18,584.46',b:[102.00,572.46,103.17,24]}];
+const OLDA={'cabins':[247.56,340.67],'tygr-mart':[205.39,436.74],'sauna':[277.11,369.90],'charging':[276.18,474.46]}; // r8: = live anchors (map is the intro's exact last frame, no hand-off zoom) // v13l intro end-frame anchors
+const NS='http://www.w3.org/2000/svg', labs=document.getElementById('labs');
+function el(n,a,p){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;}
+LABS.forEach((L,i)=>{const col=`var(--${L.c})`, g=el('g',{class:'lab',tabindex:0,role:'button','aria-label':L.t,'data-open':L.id},labs); g.style.transform=`translate(${OLDA[L.id][0]-L.a[0]}px,${OLDA[L.id][1]-L.a[1]}px)`;
+ const pl=el('circle',{class:'pl',cx:L.a[0],cy:L.a[1],r:4},g); pl.style.stroke=col; pl.style.animationDelay=(i*0.18)+'s';
+ el('polyline',{class:'ld',points:L.p},g).style.stroke=col;
+ const [x,y,w,h]=L.b; el('rect',{class:'bx',x,y,width:w,height:h},g); el('rect',{class:'fr',x,y,width:w,height:h},g).style.stroke=col;
+ el('circle',{cx:L.a[0],cy:L.a[1],r:2.6},g).style.fill=col;
+ const t=el('text',{x:x+10,y:y+h/2+0.5,'dominant-baseline':'central'},g); t.textContent=L.t;
+ el('rect',{class:'hit',x:x-8,y:y-10,width:w+16,height:h+20},g); el('circle',{class:'hit',cx:L.a[0],cy:L.a[1],r:16},g); });
+
+// intro -> live map hand-off
+const v=document.getElementById('intro'), skip=document.getElementById('skip');
+function replayIntro(){ /* r14: replay = fresh load from the top, so the intro runs from 0 exactly as on first visit */ try{history.scrollRestoration='manual'}catch(e){} scrollTo(0,0); location.reload(); }
+function endIntro(){ setTimeout(liftNav,700);  const mz=document.getElementById('mz'); if(nz){mz.style.transition='none'} document.querySelectorAll('g.lab').forEach(g=>{if(nz)g.style.transition='none'}); requestAnimationFrame(()=>requestAnimationFrame(()=>{mz.classList.remove('hand'); document.querySelectorAll('g.lab').forEach(g=>g.style.transform='none');})); v.classList.add('gone'); skip.remove(); document.body.classList.remove('intro'); setTimeout(()=>v.remove(),400); }
+const nz=new URLSearchParams(location.search).has('nointro');
+function tuckNav(){ /* r11: pull the nav boxes up under TAP TO EXPLORE (layout, not just scroll) */ const b=document.getElementById('boxes'), h=document.querySelector('svg.ui .hint'), sb=document.querySelector('.stagebox'); if(!b||!h||!sb) return; b.style.marginTop='0px'; const r=document.querySelector('svg.ui').getBoundingClientRect(), k=r.width/390; const gap=sb.getBoundingClientRect().bottom-(r.top+(798-154)*k);   /* final (tucked) TAP TO EXPLORE baseline */ const mt=Math.min(0,-(gap-GAPNAV)); b.style.marginTop=mt+'px'; b.style.paddingBottom='6px'; const ch=b.scrollHeight; const pb=Math.max(6,-mt-(ch-6)); b.style.paddingBottom=pb+'px'; }   /* r12: band runs solid from the box row to the end of the map, flush into the page below */
+const GAPNAV=14; addEventListener('resize',tuckNav); addEventListener('load',tuckNav); setTimeout(tuckNav,50);
+function liftNav(){ document.body.classList.add('tucked'); tuckNav(); setTimeout(()=>{ /* r10: bring the nav boxes into view after the intro (no-op if already visible or user scrolled) */ const b=document.getElementById('boxes'); if(!b||scrollY>40) return; const vh=window.visualViewport?visualViewport.height:innerHeight; let d=b.querySelector('a:last-child').getBoundingClientRect().bottom+14-vh; { const eb=document.querySelector('svg.ui .eb'); if(eb){ const cap=eb.getBoundingClientRect().top-14; d=Math.min(d,Math.max(0,cap)); } }   /* r12: never scroll the 'Explore the site' block under the toolbar; on short screens the boxes may sit at the bottom edge */
+  if(d>0) window.scrollTo({top:scrollY+d,behavior:'smooth'}); },760); }   /* r12: measure after the 0.7s tuck transition (was measuring mid-move -> overshoot) */
+v.addEventListener('ended',endIntro); v.addEventListener('timeupdate',()=>{ if(v.duration&&v.currentTime>v.duration-1.2) document.body.classList.add('landing'); }); skip.onclick=endIntro;
+v.play().catch(()=>{}); if(new URLSearchParams(location.search).has('nointro')) endIntro();
+
+// sticky Participate bar appears once you scroll past the top of the map (keeps 'Tap to explore' clear)
+const onS=()=>document.body.classList.toggle('top',scrollY<120); addEventListener('scroll',onS,{passive:true}); onS();
+// day / night
+const tg=document.getElementById('toggle');
+tg.onclick=()=>{const L=document.documentElement.dataset.theme==='dark'; document.documentElement.dataset.theme=L?'light':'dark'; tg.textContent=L?'☾ Night':'☀ Day';};
+
+// cards
+const TYGR_ROWS=[["January","$18,478","—"],["February","$25,449","+38%"],["March","$33,333","+31%"],["April","$34,834","+5%"],["May","$46,359","+33%"],["June","$54,838","+18%"],["July","$49,798","−9%"],["August","$58,326","+17%"],["September","$46,460","−20%"]];
+const CARDS={
+ 'tygr-mart':{green:1,st:'Phase one · Operating now',h:`<h2>TYGR Mart</h2><p>Open today on Highway 89. Bold food, a market with personality, and mountain views — TYGR Mart is the operating heart of the Alpine vision.</p>
+  <div class="car"><img src="assets/img/tygr-hero-r6b.jpg" alt="TYGR Mart"><img src="assets/img/tygr-mart-gathering.webp" alt="Gathering room · lodge seating"><img src="assets/img/tygr-mart-patio.jpg" alt="Patio"><img src="assets/img/tygr-mart-goods.webp" alt="Mart goods"><img src="assets/img/tygr-mart-kitchen.webp" alt="Kitchen and plates"><img src="assets/img/tygr-mart-dining-table.jpg" alt="Shared plates at a sunlit table"></div>
+  <h3>Operating now</h3><p>The first phase is already in motion: food, a market and a place to gather on Highway 89. The monthly sales below show the activity at TYGR Mart today.</p>
+  <table><tr><th>Month</th><th>Net sales</th><th>vs prior</th></tr>${TYGR_ROWS.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</table>
+  <p class="small">Actual Toast net sales, 2026 · prepared by Adam. Sales are not profit or property income.</p>`},
+ 'cabins':{st:'Phase two · Approved for 5, starting with 2',h:`<h2>Backcountry Huts</h2>
+  <div class="ss" id="fogoSS"><div class="ss-track"><div class="ss-slide"><img src="assets/img/fogo-01.jpg" alt="Black hut at dusk" loading="lazy"></div><div class="ss-slide"><img src="assets/img/fogo-05.jpg" alt="Timber gable front" loading="lazy"></div><div class="ss-slide"><img src="assets/img/fogo-02.jpg" alt="Hut on shoreline rock" loading="lazy"></div><div class="ss-slide"><img src="assets/img/fogo-06.jpg" alt="Timber-and-glass gable" loading="lazy"></div><div class="ss-slide"><img src="assets/img/fogo-03.jpg" alt="Two-story hut" loading="lazy"></div><div class="ss-slide"><img src="assets/img/fogo-07.jpg" alt="Hut at blue hour" loading="lazy"></div><div class="ss-slide"><img src="assets/img/fogo-08.jpg" alt="Hut on granite outcrop" loading="lazy"></div><div class="ss-slide"><img src="assets/img/fogo-13.jpg" alt="Bedroom window" loading="lazy"></div><div class="ss-slide"><img src="assets/img/fogo-12.jpg" alt="Glass doors open to the deck" loading="lazy"></div><div class="ss-slide"><img src="assets/img/fogo-14.jpg" alt="Oak stair interior" loading="lazy"></div></div><button class="ss-btn prev" aria-label="Previous photo">‹</button><button class="ss-btn next" aria-label="Next photo">›</button><div class="ss-foot"><span class="ss-count">1 / 10</span><div class="ss-dots"></div></div></div><p class="credit">Photos: Old Stonehenge, Fogo Island</p>
+  <div class="car"><img src="assets/img/cabin-04-variant-a.jpg" alt="Hut variant, timber"><img src="assets/img/cabin-04-variant-b.jpg" alt="Hut variant, black"><div class="sheetimg"><img src="assets/img/cabin-05-floorplan-ink.png" alt="Floor plan"></div><img src="assets/img/cabin-08-swede-black.jpg" alt="Swede kitchens"><div class="sheetimg"><img src="assets/img/cabin-10-cost-per-ink.png" alt="Cost per hut"></div><div class="sheetimg"><img src="assets/img/cabin-11-cost-pair-ink.png" alt="Cost for the pair"></div></div>
+  <h3>A reason to stay.</h3><p>A small mountain retreat addition with a clear ambition: make TYGR Mart a place people plan to stay.</p><p>This opportunity is rooted in a clear hospitality gap along Highway 89: demand from snowmobilers, outdoor recreation, private-airport traffic and Jackson overflow. The huts would provide a high-quality cabin experience in Alpine, Wyoming.</p><button class="back" onclick="closeCard()">‹ Back</button>`},
+ 'sauna':{st:'Phase two · Shared wellness',h:`<div class="cpill"><span class="pill op" style="--pc:var(--acc)"><i></i>Approved · Phase 2</span></div><h2>Shared wellness, open all year.</h2><p class="lead">A sauna and cold plunge steps from the huts, with Alpine's mountains all around.</p>
+  <div class="car"><img src="assets/img/bhc-sauna-glazed-exterior.jpg" alt="BHC System S Sauna: black cladding, glazed front, timber deck"><img src="assets/img/bhc-sauna-entry-exterior.jpg" alt="BHC System S Sauna: open timber door, warm cedar interior"><img src="assets/img/sauna-render-night.jpg" alt="Our render: the sauna and deck beside the two huts, windows lit"></div><button class="replaybtn" onclick="replayIntro()">↻ Replay the intro</button><p class="credit">Photos: Backcountry Hut Company, System S Sauna · render: ours</p>
+  <ul class="facts"><li>Heat, then cold. Sauna rounds and a cold plunge, the way the Nordic countries have done it for centuries.</li><li>Shared by hut guests, open year-round: winter snow, and summer recovery after the river or trail.</li><li>A short walk in a robe, under a big Wyoming sky.</li></ul>
+  <p>Contrast bathing is known for easing sore muscles, improving sleep and leaving you clear-headed. Here it's simpler than that: warm up, cool off, slow down.</p><p>We're building the part of the trip people remember, the hour that turns a stop into a night, and a night into a reason to come back.</p>
+  <a class="tlink" href="#" onclick="openCard('cabins');return false">See the huts ›</a><button class="back" onclick="closeCard()">‹ Back</button>`},
+ 'charging':{st:'On the horizon',h:`<div class="cpill"><span class="pill op" style="--pc:var(--acc)"><i></i>Pending NEVI award</span></div><div class="eyebrow" style="--pc:var(--acc)">On the horizon</div><h2>Electrify Wyoming: charging on Highway 89</h2><p class="lead">A separate project, sized for this site.</p>
+  <div class="car"><img src="assets/img/charging-render-stalls.jpg" alt="Our render: Supercharger stalls behind TYGR Mart"></div>
+  <ul class="facts"><li>The first node of the Electrify Wyoming network.</li><li>Tesla Supercharger stalls behind TYGR Mart.</li><li>NEVI application due Nov 18; nothing is spent before an award.</li><li>~5,600 vehicles a day on US 89 (WYDOT, 2025).</li></ul>
+  <p>Drivers stop for 20–40 minutes. They eat at TYGR Mart, and they book huts.</p>
+  <p class="close">Charging is funded and owned separately; investors in this raise benefit from the traffic it brings.</p><button class="back" onclick="closeCard()">‹ Back</button>`}};
+const sheet=document.getElementById('sheet'), scrim=document.getElementById('scrim'), sb=document.getElementById('sheetBody');
+function openCard(id){const C=CARDS[id]; sheet.classList.toggle('green',!!C.green); sb.innerHTML=`<div class="st">${C.st}</div>`+C.h; sheet.scrollTop=0; sheet.classList.add('open'); scrim.classList.add('open'); initSS(); if(id==='team') eqTeam();}
+function eqTeam(){ /* r13/r14: same height for name / title / bio blocks across every team card */ const tc=sb.querySelector('#tcar'); if(tc&&!tc.dataset.d){ tc.dataset.d=1; tc.addEventListener('scroll',()=>{ const k=Math.round(tc.scrollLeft/tc.clientWidth); sb.querySelectorAll('#tdots span').forEach((d,j)=>d.classList.toggle('on',j===k)); },{passive:true}); } for(const sel of ['b','i','p']){ const E=[...sb.querySelectorAll('.tcar1 .tm > '+sel)]; E.forEach(e=>e.style.minHeight=''); const m=Math.max(...E.map(e=>e.getBoundingClientRect().height)); E.forEach(e=>e.style.minHeight=m+'px'); } }
+addEventListener('resize',()=>{ if(sheet.classList.contains('open')&&sb.querySelector('.tcar1')) eqTeam(); });
+function closeCard(){sheet.classList.remove('open'); scrim.classList.remove('open');}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-open]'); if(t){e.preventDefault(); openCard(t.dataset.open);}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCard(); const t=e.target.closest&&e.target.closest('.lab'); if(t&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openCard(t.dataset.open);}});
+scrim.onclick=closeCard; document.getElementById('close').onclick=closeCard;
+let y0=null; sheet.addEventListener('touchstart',e=>{y0=sheet.scrollTop<=0?e.touches[0].clientY:null}); sheet.addEventListener('touchend',e=>{if(y0!==null&&e.changedTouches[0].clientY-y0>70)closeCard(); y0=null;});
+
+// team + portfolio (from the live deck)
+const TEAM=[["ryan","Ryan Haworth","Principal<br>Founder<br>Design & Development","A Jackson Hole native with 20+ years in hospitality. He opened Teton Thai with Sununta in 2008 and grew doors across Wyoming, Idaho and Montana."],
+ ["sununta","Sununta Haworth","Co-founder, Cuisine","Bangkok-raised, she cooked in her mother's kitchen at the original Teton Thai. Every Thai door since traces back to her family's recipes."],
+ ["adam","Adam Clary","Chief Financial Officer","Our outside accountant since 2010, CFO since early 2024. He runs finance across all five entities and models every new venture before a yes."],
+ ["tanya","Tanya Kern","Director of Operations","Joined Teton Thai as GM in 2018, helped open the brewery and launched Mama Su. Today every department's work runs through her."],
+ ["josh","Josh Spisak","Executive Chef","Trained at the Art Institutes of Philadelphia and Los Angeles. He helped open TYGR Mart and oversees menu design across Wyoming and Idaho."],
+ ["caelan","Caelan Munz","Chief Brand Officer","With the company since he was 14, first as our brewer. Today he keeps the brand, leading design, marketing and how we tell our story."],
+ ["sam-erhard","Sam Erhard","Director, Electrify Wyoming","Joined Teton Tiger in 2022 and led the kitchen team that opened Mama Su. Now he leads Electrify Wyoming on the ground, permit to power."],
+ ["sam-lee","Sam Lee, PE","Principal Engineer, Dunamis Engineering","A licensed PE blending MEP design with EV charging deployment. He leads engineering on our Alpine Supercharger site and Electrify Wyoming."]];
+document.getElementById('teamList').innerHTML=TEAM.map(([f,n,r,b])=>`<div class="person"><img src="assets/team/${f}.jpg" alt="${n}" loading="lazy"><div><b>${n}</b><i>${r}</i><p>${b}</p></div></div>`).join('');
+const PORT=[["teton-thai","Teton Thai","Driggs, Idaho · Est. 2008","Where it all began. Sununta and Ryan opened Teton Thai in Driggs in 2008, right into the crash, cooking from her family's recipes. They outgrew the first space by 2010.","page-18.jpg","https://www.tetonthai.com/driggs"],
+ ["teton-tiger","Teton Tiger","Jackson, Wyoming · Est. 2014","Thai and Asian cuisine, a vibrant bar and a gathering place in Jackson. Opened in 2014 as a new expression of the family's food, design and hospitality.","page-16.jpg","https://www.tetontiger.com"],
+ ["zoo-thai","Zoo Thai","Missoula, Montana · Est. 2019","Thai food and a distinct neighborhood welcome in downtown Missoula. Launched in 2019 with partners Tim and Nartrudee Corrigan, it carried the family's cooking into Montana and held through COVID.","page-19.jpg","https://www.zoothai.com"],
+ ["mama-su","Mama Su","Driggs, Idaho · Est. 2025","A Chinese eatery next door to Teton Thai, from the teams behind Teton Thai and Teton Tiger. It grew out of a dim sum idea from Sam Erhard and Ryan, and Sam led the kitchen team that opened it in 2025.","page-17.jpg","https://www.mamasudriggs.com"],
+ [null,"TYGR Mart","Alpine, Wyoming · Est. 2026","Bold food, a market with personality and mountain views on Highway 89. Open since January 2026, it is the first phase of the Alpine property and the operating heart of what comes next.","tygr-mart-collage.jpg",null]];
+document.getElementById('portList').innerHTML=PORT.map(([l,t,pl,b,img,href])=>`<div class="rest"><div class="obar"><img src="assets/port/${l||'tygr-mart'}-black.png?v=r8b" alt=""><div><b>${t}</b><i>${pl}</i></div></div><img class="ph-img" src="assets/port/${img.replace('.jpg',img.startsWith('page')?'-photo.jpg':'.jpg')}" alt="${t}" loading="lazy"><p style="margin-top:10px;font-size:14px">${b}</p>${href?`<a class="small" href="${href}" target="_blank" rel="noopener" style="color:var(--acc)">Visit website ›</a>`:''}</div>`).join('');
+CARDS.team={st:'Our team',h:`<h2>The people behind our doors</h2><div class="pcar tcar1" id="tcar">${TEAM.map(([f,n,r,b])=>`<div class="tm"><img src="assets/team/${f}.jpg" alt="${n}" loading="lazy"><b>${n}</b><i>${r.replace(/<br>/g,' · ')}</i><p>${b}</p></div>`).join('')}</div><div class="tdots" id="tdots">${TEAM.map((_,k)=>`<span${k?'':' class="on"'}></span>`).join('')}</div><p class="small" style="margin-top:6px">Swipe for more · ${TEAM.length} people</p><button class="back" onclick="closeCard()">‹ Back</button>`};   /* r14: one person per view, photo full width on top, short bio from TEAM (single data source) */
+CARDS.portfolio={st:'Our portfolio',h:`<h2>Five doors. Three states.</h2><div class="pcar">${document.getElementById('portList').innerHTML}</div><button class="back" onclick="closeCard()">‹ Back</button>`};
+document.querySelectorAll('#boxes a:not([data-open])').forEach(a=>a.addEventListener('click',e=>{const t=document.querySelector(a.getAttribute('href')); if(!t)return; e.preventDefault(); window.scrollTo({top:t.getBoundingClientRect().top+scrollY-8,behavior:'smooth'}); history.replaceState(null,'',a.getAttribute('href'));}));
+
+function initSS(){const ss=document.getElementById('fogoSS');if(!ss||ss.dataset.ok)return;ss.dataset.ok=1;const tr=ss.querySelector('.ss-track'),sl=[...tr.children],n=sl.length,dots=ss.querySelector('.ss-dots'),cnt=ss.querySelector('.ss-count'),pv=ss.querySelector('.prev'),nx=ss.querySelector('.next');
+dots.innerHTML=sl.map((_,i)=>`<button aria-label="Photo ${i+1}"></button>`).join('');const db=[...dots.children];
+const go=i=>tr.scrollTo({left:Math.max(0,Math.min(n-1,i))*tr.clientWidth,behavior:'smooth'});
+const cur=()=>Math.round(tr.scrollLeft/tr.clientWidth);
+const upd=()=>{const i=cur();db.forEach((d,j)=>d.classList.toggle('on',j===i));cnt.textContent=(i+1)+' / '+n;pv.disabled=i===0;nx.disabled=i===n-1;};
+pv.onclick=()=>go(cur()-1);nx.onclick=()=>go(cur()+1);db.forEach((d,j)=>d.onclick=()=>go(j));
+tr.addEventListener('scroll',()=>requestAnimationFrame(upd),{passive:true});tr.tabIndex=0;tr.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(cur()+1);if(e.key==='ArrowLeft')go(cur()-1);});upd();}
+
+// r8c: ?timer debug overlay (tap = freeze/unfreeze, double-tap or long-press = replay intro from 0)
+(function(){ if(!new URLSearchParams(location.search).has('timer')) return;
+ const el=document.createElement('div'); el.id='dbgtimer';
+ el.style.cssText='position:fixed;z-index:99;top:calc(54px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));font:600 10px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.06em;color:#c9c4b8;background:rgba(20,20,20,.7);border:1px solid rgba(250,246,232,.25);padding:5px 7px;border-radius:3px;-webkit-user-select:none;user-select:none;cursor:pointer;touch-action:manipulation';
+ document.body.appendChild(el);
+ const vid=document.getElementById('intro'), T0=performance.now(); let frozen=false, endAt=null, endT=null;
+ const log=(m)=>console.log(`[lrh-timer] ${((performance.now()-T0)/1000).toFixed(2)}s wall · ${m}`);
+ const LAB=[['BACKCOUNTRY HUTS',40.02],['TYGR MART',40.44],['SAUNA',40.86],['EV CHARGING',41.28]]; let li=0;   // label draw-in starts baked into v13p (TD.lab0 + i*labStep after D start)
+ if(vid){ vid.addEventListener('playing',()=>log('video playing')); vid.addEventListener('ended',()=>{endAt=performance.now(); endT=vid.duration; log(`video end at ${vid.duration.toFixed(2)}s`);}); }
+ const sk=document.getElementById('skip'); if(sk) sk.addEventListener('click',()=>{ if(endAt===null){endAt=performance.now(); endT=vid?vid.currentTime:0; log(`skip at ${endT.toFixed(2)}s`);} });
+ new MutationObserver(()=>{ if(!document.body.classList.contains('intro')&&!el.dataset.map){ el.dataset.map=1; log('map shown (handoff)'); } }).observe(document.body,{attributes:true,attributeFilter:['class']});
+ function tick(){ if(!frozen){ let txt;
+   if(endAt===null&&vid&&document.body.contains(vid)){ const t=vid.currentTime; txt=`intro ${t.toFixed(1)}s`; while(li<LAB.length&&t>=LAB[li][1]){ log(`label draw start: ${LAB[li][0]} (video ${t.toFixed(2)}s)`); li++; } }
+   else { if(endAt===null){endAt=performance.now(); endT=vid?vid.duration||0:0;} txt=`${(endT||0).toFixed(1)} +${((performance.now()-endAt)/1000).toFixed(1)}s map`; }
+   el.textContent=txt; } requestAnimationFrame(tick); }
+ tick();
+ let lastTap=0, lp=null;
+ const replay=()=>{ log('replay requested'); location.reload(); };
+ el.addEventListener('pointerdown',()=>{ lp=setTimeout(()=>{lp=null; replay();},650); });
+ el.addEventListener('pointerup',()=>{ if(lp===null) return; clearTimeout(lp); lp=null; const n=performance.now(); if(n-lastTap<320){ replay(); return; } lastTap=n; setTimeout(()=>{ if(lastTap===n){ frozen=!frozen; el.style.borderColor=frozen?'#e8933a':'rgba(250,246,232,.25)'; log(frozen?'timer frozen':'timer running'); } },330); });
+})();
+</script></body></html>
