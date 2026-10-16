@@ -328,17 +328,30 @@ LABS.forEach((L,i)=>{const col=`var(--${L.c})`, g=el('g',{class:'lab',tabindex:0
 
 // intro -> live map hand-off
 const v=document.getElementById('intro'), skip=document.getElementById('skip');
-function replayIntro(){ /* r14: replay = fresh load from the top, so the intro runs from 0 exactly as on first visit */ try{history.scrollRestoration='manual'}catch(e){} scrollTo(0,0); location.reload(); }
-let introDone=false; function endIntro(){ if(introDone) return; introDone=true; setTimeout(liftNav,700);  const mz=document.getElementById('mz'); if(nz){mz.style.transition='none'} document.querySelectorAll('g.lab').forEach(g=>{if(nz)g.style.transition='none'}); requestAnimationFrame(()=>requestAnimationFrame(()=>{mz.classList.remove('hand'); document.querySelectorAll('g.lab').forEach(g=>g.style.transform='none');})); v.classList.add('gone'); skip.remove(); document.body.classList.remove('intro'); setTimeout(()=>v.remove(),400); }
+function replayIntro(){ /* r15: replay in place (no reload): play() runs synchronously inside the tap, so iOS treats it as a user gesture */
+ if(typeof closeCard==='function') closeCard();
+ v.muted=true; v.defaultMuted=true; v.playsInline=true;
+ try{ v.currentTime=0; }catch(e){}
+ const pr=v.play(); if(pr&&pr.catch) pr.catch(e=>{ introWhy('replay '+e.name); endIntro(); });
+ introDone=false; v.classList.remove('gone'); skip.style.display=''; document.body.classList.remove('landing'); document.body.classList.add('intro');
+ scrollTo(0,0); }
+let introDone=false; function endIntro(){ if(introDone) return; introDone=true; setTimeout(liftNav,700);  const mz=document.getElementById('mz'); if(nz){mz.style.transition='none'} document.querySelectorAll('g.lab').forEach(g=>{if(nz)g.style.transition='none'}); requestAnimationFrame(()=>requestAnimationFrame(()=>{mz.classList.remove('hand'); document.querySelectorAll('g.lab').forEach(g=>g.style.transform='none');})); v.classList.add('gone'); skip.style.display='none'; document.body.classList.remove('intro'); setTimeout(()=>{ if(introDone) v.pause(); },400); }
 const nz=new URLSearchParams(location.search).has('nointro');
 function tuckNav(){ /* r11: pull the nav boxes up under TAP TO EXPLORE (layout, not just scroll) */ const b=document.getElementById('boxes'), h=document.querySelector('svg.ui .hint'), sb=document.querySelector('.stagebox'); if(!b||!h||!sb) return; b.style.marginTop='0px'; const r=document.querySelector('svg.ui').getBoundingClientRect(), k=r.width/390; const gap=sb.getBoundingClientRect().bottom-(r.top+(798-154)*k);   /* final (tucked) TAP TO EXPLORE baseline */ const mt=Math.min(0,-(gap-GAPNAV)); b.style.marginTop=mt+'px'; b.style.paddingBottom='6px'; const ch=b.scrollHeight; const pb=Math.max(6,-mt-(ch-6)); b.style.paddingBottom=pb+'px'; }   /* r12: band runs solid from the box row to the end of the map, flush into the page below */
 const GAPNAV=14; addEventListener('resize',tuckNav); addEventListener('load',tuckNav); setTimeout(tuckNav,50);
 function liftNav(){ document.body.classList.add('tucked'); tuckNav(); setTimeout(()=>{ /* r10: bring the nav boxes into view after the intro (no-op if already visible or user scrolled) */ const b=document.getElementById('boxes'); if(!b||scrollY>40) return; const vh=window.visualViewport?visualViewport.height:innerHeight; let d=b.querySelector('a:last-child').getBoundingClientRect().bottom+14-vh; { const eb=document.querySelector('svg.ui .eb'); if(eb){ const cap=eb.getBoundingClientRect().top-14; d=Math.min(d,Math.max(0,cap)); } }   /* r12: never scroll the 'Explore the site' block under the toolbar; on short screens the boxes may sit at the bottom edge */
   if(d>0) window.scrollTo({top:scrollY+d,behavior:'smooth'}); },760); }   /* r12: measure after the 0.7s tuck transition (was measuring mid-move -> overshoot) */
 v.addEventListener('ended',endIntro); v.addEventListener('timeupdate',()=>{ if(v.duration&&v.currentTime>v.duration-1.2) document.body.classList.add('landing'); }); skip.onclick=endIntro;
-/* r15: iOS autoplay: force muted inline playback; if the browser refuses (e.g. Low Power Mode), skip straight into the site instead of showing a play button */
+/* r15b: iOS autoplay. Fall back to the site only if play() is actually refused (NotAllowedError), not on a slow load or an AbortError.
+   A refused intro still starts on the first touch anywhere (a user gesture), and a hard-stuck intro gives way after 8s. ?why shows the reason. */
 v.muted=true; v.defaultMuted=true; v.playsInline=true; v.setAttribute('webkit-playsinline','');
-if(new URLSearchParams(location.search).has('nointro')) endIntro(); else { const pr=v.play(); if(pr&&pr.catch) pr.catch(()=>endIntro()); setTimeout(()=>{ if(!introDone&&v.paused&&v.currentTime===0) endIntro(); },3000); }
+function introWhy(t){ document.body.dataset.introWhy=t; if(new URLSearchParams(location.search).has('why')){ let el=document.getElementById('why'); if(!el){ el=document.createElement('div'); el.id='why'; el.style.cssText='position:fixed;left:8px;bottom:8px;z-index:99;font:11px monospace;color:#fff;background:#000a;padding:4px 6px'; document.body.appendChild(el);} el.textContent='intro: '+t; } }
+function tryPlay(src){ const pr=v.play(); if(pr&&pr.then) pr.then(()=>introWhy(src+' playing')).catch(e=>{ introWhy(src+' '+e.name+': '+e.message); if(e.name==='NotAllowedError'&&src!=='load') endIntro(); }); }
+if(new URLSearchParams(location.search).has('nointro')) endIntro(); else {
+ tryPlay('load');
+ const kick=()=>{ if(!introDone&&v.paused) tryPlay('touch'); }; addEventListener('touchstart',kick,{once:true,passive:true}); addEventListener('pointerdown',kick,{once:true});
+ setTimeout(()=>{ if(!introDone&&v.paused&&v.currentTime===0){ introWhy((document.body.dataset.introWhy||'')+' / stuck 8s'); endIntro(); } },8000);
+}
 
 // sticky Participate bar appears once you scroll past the top of the map (keeps 'Tap to explore' clear)
 const onS=()=>document.body.classList.toggle('top',scrollY<120); addEventListener('scroll',onS,{passive:true}); onS();
